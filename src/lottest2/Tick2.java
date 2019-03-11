@@ -1,7 +1,8 @@
 package lottest2;
+import java.io.Serializable;
 import java.time.LocalTime;
 
-public class Tick2 {
+public class Tick2 implements Serializable{
     private int ticketNo = 0;
     private double feeAmt = 0;
     private LocalTime timeIn;

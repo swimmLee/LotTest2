@@ -1,5 +1,7 @@
 package lottest2;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -15,21 +17,29 @@ public class LotTest2 implements RatesLT2 {
     private static Map<Integer, LocalTime> lotIn =
             new HashMap<Integer, LocalTime>();
     private static List<Integer> availableTickets = new ArrayList<>();
+    private static List<Tick2> outTickets = new ArrayList<>();
     Random randNum = new Random();
     Screen2 screen = new Screen2();
     
-    public static void main(String[] args) {
+    public static void main(String[] args)throws 
+            FileNotFoundException, IOException, ClassNotFoundException{
         new LotTest2();
     }
-    public LotTest2(){
+    public LotTest2()throws FileNotFoundException,
+            IOException, ClassNotFoundException{
         Scanner kb = new Scanner(System.in);
         String ans = "y";
         int ticketCount = 0;
         double amount = 0;
-        int nextTicketNumber = 0, ticketNumber;
+        int nextTicketNumber = 0, ticketNumber, startNumber;
         LocalTime timeIn, timeOut;
         Duration parkDuration;
         double divider = .5;
+        String fileName = "park.csv";
+        
+        outTickets = LotReader.readLot(fileName);
+        nextTicketNumber = outTickets.get(outTickets.size()-1).getTicketNo();
+        startNumber = nextTicketNumber;
         /*
         for(int i = 1; i<6; i++){
             screen.getInScreen();
@@ -57,7 +67,7 @@ public class LotTest2 implements RatesLT2 {
         }
         
         
-        //ans = "";
+        ans = "";
         while ( !ans.equalsIgnoreCase("3")){
             Double inOrOut = randNum.nextDouble();
             if(inOrOut < divider){
@@ -121,6 +131,18 @@ public class LotTest2 implements RatesLT2 {
         getListOut();
         
         System.out.println("Ticket Count " + ticketCount);
+        System.out.println("");
+        for(int i=1; i<=lot.size(); i++){
+            outTickets.add(lot.get(i+startNumber));
+            System.out.println(lot.get(i+startNumber).getFeeAmt());
+        }
+        /*
+        for(Map.Entry<Integer, Tick2> ticket : lot.entrySet()){
+            outTickets.add((Tick2) ticket);
+         */
+        
+        LotWriter.writeTickets(fileName, outTickets);
+        
             /*
             for (Map.Entry<Integer, LocalTime> ticket : lotIn.entrySet()){
                 System.out.print("  "+ ticket.getKey());
