@@ -15,9 +15,9 @@ public class LotWriter{
         try {
             for(int i=0; i<lot.size();i++){
                 oos.writeObject(lot.get(i));
-                System.out.println("Writing to file KeyNo " + 
+                System.out.println("Writing file:\tTicketNo " + 
                     lot.get(i).getTicketNo() + 
-                    "\tFee " + lot.get(i).getFeeAmt() +
+                    "\tFee  " + lot.get(i).getFeeAmt() +
                     "\tIn " + lot.get(i).getTimeIn() +
                     "\tOut " + lot.get(i).getTimeOut());
             }

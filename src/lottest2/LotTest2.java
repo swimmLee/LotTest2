@@ -50,7 +50,7 @@ public class LotTest2 implements RatesLT2 {
         }
         if(ans.equals("1")){
             countToday++;
-            lot.add(new Tick2( (startNumber + countToday) , clockIn()) );
+            lot.add(new Tick2( (startNumber + countToday) , getClockIn()) );
             availableTickets.add(countToday); //adds to list of cars in lot
             //ticketCount++;  //tickets issued today
         }
@@ -68,7 +68,7 @@ public class LotTest2 implements RatesLT2 {
                 }
                 if( ans.equals("1")){   //Make Ticket;
                     countToday ++;    //set new ticket no.
-                    lot.add(new Tick2( (startNumber + countToday), clockIn()));
+                    lot.add(new Tick2( (startNumber + countToday), getClockIn()));
                     availableTickets.add(countToday); //add to tick in lot
                     ans = "";
                     //ticketCount++; //tickets issued today
@@ -91,7 +91,7 @@ public class LotTest2 implements RatesLT2 {
                     int indexNumber = availableTickets.get(atPointer)-1;
                     int ticketNumber = indexNumber + 1 + startNumber;
                     if( ans.equals("1")){     //normal checkout
-                        timeOut = clockOut();
+                        timeOut = getClockOut();
                         lot.get(indexNumber).setTimeOut(timeOut);   //timeOut
                         timeIn = lot.get(indexNumber).getTimeIn();
                         parkDuration = Duration.between(timeIn, timeOut);
@@ -116,26 +116,15 @@ public class LotTest2 implements RatesLT2 {
         }
         getTodayListOut();
         getSummary(countToday);
-        /*  --- Diagnostic ---
-        System.out.println("Ticket Count " + ticketCount);
-        System.out.println("");
+            // add todays tickets to storeTickets ArrayList - All tickets Log
         for(int i=0; i<lot.size(); i++){
             storeTickets.add(lot.get(i));
-            System.out.println(lot.get(i).getFeeAmt());
         }
-    ---- CheckOut
-        Activity to Date
- $120 was collected from 13 Check Ins
- $50 was collected from 2 Lost Tickets
- $230 was collected overall
-        */
-        for(int i=0; i<lot.size(); i++){
-            storeTickets.add(lot.get(i));
-            //System.out.println(lot.get(i).getFeeAmt());
-        }
+            ///write to ticket log file
         LotWriter.writeTickets(fileName, storeTickets);
-            
     }
+    
+    
     public void getSummary(int countToday){
         int countLost = 0;
         double totalLost = 0;
@@ -150,16 +139,14 @@ public class LotTest2 implements RatesLT2 {
             System.out.println(lot.get(i).getFeeAmt());
         }
         grandTotal = totalRev;
-            //--- Diagnostic  ----
         for(int i=0; i<storeTickets.size(); i++){
             grandTotal += storeTickets.get(i).getFeeAmt();
-            //System.out.println(storeTickets.get(i).getFeeAmt());
         }
         screen.setSummary(totalRev, countToday, totalLost, countLost, grandTotal);
     }
     
     //  ----  Diagnostic  ---
-    public void getTodayListOut(){
+    private void getTodayListOut(){
         System.out.println("Today's List of transactions: ");
         for (Tick2 ticket : lot){
             System.out.println("obj no. " + ticket.getTicketNo() +
@@ -169,14 +156,14 @@ public class LotTest2 implements RatesLT2 {
         }
     }
 
-    public LocalTime clockIn(){
+    private LocalTime getClockIn(){
         int hour = randNum.nextInt(5) + 7;
         int min = randNum.nextInt(60);
         LocalTime hm = LocalTime.of(hour, min);
         return hm;
     }
     
-    public LocalTime clockOut(){
+    private LocalTime getClockOut(){
         int hour = randNum.nextInt(11) + 13;
         int min = randNum.nextInt(60);
         LocalTime hm = LocalTime.of(hour, min);
@@ -190,7 +177,7 @@ public class LotTest2 implements RatesLT2 {
         if(timeParked<=3){
             charge = MIN_PARKING_FEE;
         } else if (timeParked > 3 && timeParked <= 13){
-            charge = MIN_PARKING_FEE +(timeParked-3)*HOURLY_PAEKING_FEE;
+            charge = MIN_PARKING_FEE +(timeParked-3)*HOURLY_PARKING_FEE;
         } else if (timeParked>13 && timeParked<=24){
             charge = MAX_PARKING_FEE;
         }

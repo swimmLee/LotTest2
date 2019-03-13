@@ -24,7 +24,7 @@ public class ChargesLT2 implements RatesLT2 {
         if(timeParked<=3){
             charge = MIN_PARKING_FEE;
         } else if (timeParked > 3 && timeParked <= 13){
-            charge = MIN_PARKING_FEE +(timeParked-3)*HOURLY_PAEKING_FEE;
+            charge = MIN_PARKING_FEE +(timeParked-3)*HOURLY_PARKING_FEE;
         } else if (timeParked>13 && timeParked<=24){
             charge = MAX_PARKING_FEE;
         }
