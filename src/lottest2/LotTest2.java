@@ -5,21 +5,18 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
 
 public class LotTest2 implements RatesLT2 {
-    private static Map<Integer, Tick2> lot = new HashMap<Integer, Tick2>();
-    private static Map<Integer, LocalTime> lotIn =
-            new HashMap<Integer, LocalTime>();
+    private static List<Tick2> lot = new ArrayList<>();
     private static List<Integer> availableTickets = new ArrayList<>();
-    private static List<Tick2> outTickets = new ArrayList<>();
+    private static List<Tick2> storeTickets = new ArrayList<>();
     Random randNum = new Random();
     Screen2 screen = new Screen2();
+    Summary summary = new Summary();
     
     public static void main(String[] args)throws 
             FileNotFoundException, IOException, ClassNotFoundException{
@@ -29,184 +26,150 @@ public class LotTest2 implements RatesLT2 {
             IOException, ClassNotFoundException{
         Scanner kb = new Scanner(System.in);
         String ans = "y";
-        int ticketCount = 0;
+        String fileName = "park.csv";
         double amount = 0;
-        int nextTicketNumber = 0, ticketNumber, startNumber;
+        int countToday = 0,
+            startNumber = 0;
         LocalTime timeIn, timeOut;
         Duration parkDuration;
-        double divider = .5;
-        String fileName = "park.csv";
         
-        outTickets = LotReader.readLot(fileName);
-        nextTicketNumber = outTickets.get(outTickets.size()-1).getTicketNo();
-        startNumber = nextTicketNumber;
-        /*
-        for(int i = 1; i<6; i++){
-            screen.getInScreen();
-            while( !ans.equals("1")){
-                ans = kb.nextLine();
-                screen.getInScreen();
-            }
-            nextTicketNumber ++;
-            lot.put(nextTicketNumber, new Tick2(nextTicketNumber, clockIn()));
-            availableTickets.add(nextTicketNumber);
-            ticketCount++;
-        }
-        */
+        screen.setInitialize(fileName, lot);
+        //LotWriter.writeTickets(fileName, lot);
+        
+        storeTickets = LotReader.readLot(fileName);
+        if(storeTickets.isEmpty())
+            startNumber = 0;
+        else
+            startNumber = storeTickets.get(storeTickets.size()-1).getTicketNo();
+        
         ans = "";
-        //screen.getInScreen();
+                //screen.getInScreen(); -- load first car or close lot.
         while( !(ans.equals("1") || ans.equals("3")) ){
             screen.getInScreen();
             ans = kb.nextLine();
         }
         if(ans.equals("1")){
-            nextTicketNumber++;
-            lot.put( nextTicketNumber,new Tick2(nextTicketNumber, clockIn()) );
-            availableTickets.add(nextTicketNumber);
-            ticketCount++;
+            countToday++;
+            lot.add(new Tick2( (startNumber + countToday) , clockIn()) );
+            availableTickets.add(countToday); //adds to list of cars in lot
+            //ticketCount++;  //tickets issued today
         }
-        
         
         ans = "";
         while ( !ans.equalsIgnoreCase("3")){
             Double inOrOut = randNum.nextDouble();
+                //use random number to decide which screen to offer for action.
+            double divider = .5;
             if(inOrOut < divider){
-                //Start checkIn with screen presenation;
+                //Start checkIn screen, wait for valid reply;
                 while( !( ans.equals("1") || ans.equals("3") ) ){
                     screen.getInScreen();
                     ans = kb.nextLine();
                 }
                 if( ans.equals("1")){   //Make Ticket;
-                    nextTicketNumber ++;
-                    lot.put(nextTicketNumber, 
-                            new Tick2(nextTicketNumber, clockIn()));
-                    availableTickets.add(nextTicketNumber);
+                    countToday ++;    //set new ticket no.
+                    lot.add(new Tick2( (startNumber + countToday), clockIn()));
+                    availableTickets.add(countToday); //add to tick in lot
                     ans = "";
-                    ticketCount++;
+                    //ticketCount++; //tickets issued today
                 }
                 else{
-                    //Close Lot and Summarize;
+                    //Close Lot and Summarize; diagnostic print statement.
+                    //unnecessary else statement falls through to exit.
                     System.out.println("Close The Lot.");
                 }
             }
-            else{
+            else{           //Exit lot. Wait for valid response.
                 while( !( ans.equals("1") || ans.equals("2") ) ){
                     screen.getOutScreen();
                     ans = kb.nextLine();
                 }
                 //test if possible to check out. Lot must have car to checkout;
-                if( !availableTickets.isEmpty()){  //checkOut;
-                    //get a ticket to checkout based on location in list
-                    if( ans.equals("1")){
-                        int aTicket = 
+                if( !availableTickets.isEmpty()){   //there is car to checkOut;
+                    int atPointer =     //get random pointer to ticket numbers.
                             randNum.nextInt( availableTickets.size() );
-                        ticketNumber = availableTickets.get(aTicket);
+                    int indexNumber = availableTickets.get(atPointer)-1;
+                    int ticketNumber = indexNumber + 1 + startNumber;
+                    if( ans.equals("1")){     //normal checkout
                         timeOut = clockOut();
-                        lot.get(ticketNumber).setTimeOut(timeOut);   //timeOut
-                        timeIn = lot.get(ticketNumber).getTimeIn();
+                        lot.get(indexNumber).setTimeOut(timeOut);   //timeOut
+                        timeIn = lot.get(indexNumber).getTimeIn();
                         parkDuration = Duration.between(timeIn, timeOut);
                         int hoursParked = (int)parkDuration.toHours();
                         amount = getCharges(parkDuration);
-                        lot.get(ticketNumber).setFeeAmt(amount);   //fee
+                        lot.get(indexNumber).setFeeAmt(amount);    //fee
                         screen.setReceipt(ticketNumber, amount, hoursParked,
                                 timeIn, timeOut);
-                        availableTickets.remove(aTicket);
+                        availableTickets.remove(atPointer);
                     }
-                    else if(ans.equals("2")){
-                        //lost ticket   update statistics
-                        int aTicket = 
-                            randNum.nextInt( availableTickets.size() );
-                        ticketNumber = availableTickets.get(aTicket);
+                    else if(ans.equals("2")){  //lost ticket. update statistics
                         timeOut = null;
-                        lot.get(ticketNumber).setTimeOut(timeOut);
+                        lot.get(indexNumber).setTimeOut(timeOut);
                         amount = LOST_TICKET_FEE;
-                        lot.get(ticketNumber).setFeeAmt(amount);
+                        lot.get(indexNumber).setFeeAmt(amount);
                         screen.setLostTicketReceipt(amount);
-                        availableTickets.remove(aTicket);
+                        availableTickets.remove(atPointer);
                     }
                 }
                 ans = "";
             }
         }
-        getListOut();
-        
+        getTodayListOut();
+        getSummary(countToday);
+        /*  --- Diagnostic ---
         System.out.println("Ticket Count " + ticketCount);
         System.out.println("");
-        for(int i=1; i<=lot.size(); i++){
-            outTickets.add(lot.get(i+startNumber));
-            System.out.println(lot.get(i+startNumber).getFeeAmt());
+        for(int i=0; i<lot.size(); i++){
+            storeTickets.add(lot.get(i));
+            System.out.println(lot.get(i).getFeeAmt());
         }
-        /*
-        for(Map.Entry<Integer, Tick2> ticket : lot.entrySet()){
-            outTickets.add((Tick2) ticket);
-         */
-        
-        LotWriter.writeTickets(fileName, outTickets);
-        
-            /*
-            for (Map.Entry<Integer, LocalTime> ticket : lotIn.entrySet()){
-                System.out.print("  "+ ticket.getKey());
+    ---- CheckOut
+        Activity to Date
+ $120 was collected from 13 Check Ins
+ $50 was collected from 2 Lost Tickets
+ $230 was collected overall
+        */
+        for(int i=0; i<lot.size(); i++){
+            storeTickets.add(lot.get(i));
+            //System.out.println(lot.get(i).getFeeAmt());
+        }
+        LotWriter.writeTickets(fileName, storeTickets);
+            
+    }
+    public void getSummary(int countToday){
+        int countLost = 0;
+        double totalLost = 0;
+        double totalRev = 0;
+        double grandTotal = 0;
+        for(int i=0; i<lot.size(); i++){
+            totalRev += lot.get(i).getFeeAmt();
+            if(lot.get(i).getFeeAmt() == LOST_TICKET_FEE){
+                totalLost += LOST_TICKET_FEE;
+                countLost++;
             }
-            System.out.println("\n\tWhich is your ticket number?");
-            count = Integer.parseInt(kb.nextLine());
-            if( !lotIn.containsKey(count)){
-                System.out.println("\tYour ticket number is not listed."
-                        + "\n\tPlease choose from the list above.");
-            }
-            else{
-                timeIn = lotIn.get(count);
-                System.out.println("before the loop timeIn: " + timeIn);
-                for(Map.Entry<Integer, LocalTime> ticket : lotIn.entrySet()){
-                    if(count == ticket.getKey()){
-                        timeIn = ticket.getValue();
-                    }
-                }
-                LocalTime timeOut = clockOut();
-                Duration d1 = Duration.between(timeIn, timeOut);
-                
-                amount = getCharges(d1);
-                lot.put(count, new Tick2(count, amount, timeIn, timeOut));
-                //int timeParked = (int)d1.toHours();
-                screen.setReceipt(count, amount, (int)d1.toHours(), timeIn, timeOut);
-                lotIn.remove(count);
-            }
-            System.out.println("Quit q? or Enter to change another");
-            ans = kb.nextLine();
+            System.out.println(lot.get(i).getFeeAmt());
         }
-        
-        for (Map.Entry<Integer, LocalTime> ticket : lotIn.entrySet()){
-            System.out.println("map key entry "+ ticket.getKey() +
-                    "\tobj LocalTime timeIn " + ticket.getValue());
+        grandTotal = totalRev;
+            //--- Diagnostic  ----
+        for(int i=0; i<storeTickets.size(); i++){
+            grandTotal += storeTickets.get(i).getFeeAmt();
+            //System.out.println(storeTickets.get(i).getFeeAmt());
         }
-        for (Map.Entry<Integer, Tick2> ticket : lot.entrySet()){
-            System.out.println("map key entry "+ ticket.getKey() +
-                    "\tobj no. " + ticket.getValue().getTicketNo() +
-                    "\tobj amount " + ticket.getValue().getFeeAmt() +
-                    "\tobj timeIn " + ticket.getValue().getTimeIn() +
-                    "\tobj timeOut " + ticket.getValue().getTimeOut() );
-        }
-        
-        for (int i=1; i<=lot.size(); i++){
-            ans = "ticket no. : " + lot.get(i).getTicketNo() + "\tin: " +
-                    lot.get(i).getTimeIn() + "\ttime out: " +
-                    lot.get(i).getTimeOut() + "\tfee amount: " +
-                    lot.get(i).getFeeAmt();
-            System.out.println(ans);
-        }
-*/
+        screen.setSummary(totalRev, countToday, totalLost, countLost, grandTotal);
     }
     
-    public void getListOut(){
-        for (Map.Entry<Integer, Tick2> ticket : lot.entrySet()){
-            System.out.println("map key "+ ticket.getKey() +
-                "\tobj no. " + ticket.getValue().getTicketNo() +
-                "\t amount " + ticket.getValue().getFeeAmt() +
-                "\t timeIn " + ticket.getValue().getTimeIn() +
-                "\t timeOut " + ticket.getValue().getTimeOut() );
+    //  ----  Diagnostic  ---
+    public void getTodayListOut(){
+        System.out.println("Today's List of transactions: ");
+        for (Tick2 ticket : lot){
+            System.out.println("obj no. " + ticket.getTicketNo() +
+                "\t amount " + ticket.getFeeAmt() +
+                "\t timeIn " + ticket.getTimeIn() +
+                "\t timeOut " + ticket.getTimeOut() );
         }
     }
 
-public LocalTime clockIn(){
+    public LocalTime clockIn(){
         int hour = randNum.nextInt(5) + 7;
         int min = randNum.nextInt(60);
         LocalTime hm = LocalTime.of(hour, min);
@@ -218,12 +181,6 @@ public LocalTime clockIn(){
         int min = randNum.nextInt(60);
         LocalTime hm = LocalTime.of(hour, min);
         return hm;
-    }
-    
-    public int getTicketNumber(){
-        int aTicket = 
-            randNum.nextInt( availableTickets.size() );
-        return availableTickets.get(aTicket);
     }
     
     @Override

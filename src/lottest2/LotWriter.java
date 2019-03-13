@@ -16,7 +16,10 @@ public class LotWriter{
             for(int i=0; i<lot.size();i++){
                 oos.writeObject(lot.get(i));
                 System.out.println("Writing to file KeyNo " + 
-                        lot.get(i).getTicketNo());
+                    lot.get(i).getTicketNo() + 
+                    "\tFee " + lot.get(i).getFeeAmt() +
+                    "\tIn " + lot.get(i).getTimeIn() +
+                    "\tOut " + lot.get(i).getTimeOut());
             }
         }
         catch(IOException e){

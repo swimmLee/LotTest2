@@ -1,7 +1,10 @@
 package lottest2;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.Scanner;
 
 public class Screen2 {
     private String header = "\nBest Value Parking Garage"
@@ -15,6 +18,8 @@ public class Screen2 {
     private String billId = "Receipt for a vehicle id ";
     private String billSum = " hours parked ";
     private String billLost = "Lost Ticket";
+    String ans = "";
+    Scanner kb = new Scanner(System.in);
     
     public Screen2(){
     }
@@ -36,7 +41,7 @@ public class Screen2 {
     
     public void setLostTicketReceipt(double fee){
         System.out.println(header);
-        System.out.println("\n" + billId + "unknown");
+        System.out.println("\n" + billId + ": Unknown");
         System.out.println("\n\n" + billLost);
         System.out.printf("\n$%.2f\n", fee );
     }
@@ -49,4 +54,19 @@ public class Screen2 {
         System.out.printf("\n$%.2f\n", fee );
     }
     
+    public void setSummary(double totalRev, int ticketCount,
+            double totalLost, int countLost, double grandTotal){
+        System.out.println(header);
+        System.out.println("\nActivity to Date");
+        System.out.printf("\n\n$%.2f was collected from %d tickets.", totalRev, ticketCount);
+        System.out.printf("\n$%.2f was collected from %d lost tickets.", totalLost, countLost);
+        System.out.printf("\n\n$%.2f was collected overall.\n\n", grandTotal );
+    }
+    
+    public void setInitialize(String fileName, List lot) throws IOException{
+        System.out.println("Do You Want to start a new parking lot Log file?");
+        if(kb.nextLine().equalsIgnoreCase("Y")){
+            LotWriter.writeTickets(fileName, lot);
+        };
+    }
 }
