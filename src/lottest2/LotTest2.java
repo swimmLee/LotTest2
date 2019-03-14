@@ -16,7 +16,6 @@ public class LotTest2 implements RatesLT2 {
     private static List<Tick2> storeTickets = new ArrayList<>();
     Random randNum = new Random();
     Screen2 screen = new Screen2();
-    Summary summary = new Summary();
     
     public static void main(String[] args)throws 
             FileNotFoundException, IOException, ClassNotFoundException{
@@ -33,8 +32,9 @@ public class LotTest2 implements RatesLT2 {
         LocalTime timeIn, timeOut;
         Duration parkDuration;
         
-        screen.setInitialize(fileName, lot);
-        //LotWriter.writeTickets(fileName, lot);
+        // -- Ask overwrite file - screen.setInitialize(fileName, lot);
+        // -- OR write the file to create the file with name and empty.
+        // LotWriter.writeTickets(fileName, lot);
         
         storeTickets = LotReader.readLot(fileName);
         if(storeTickets.isEmpty())
@@ -53,9 +53,9 @@ public class LotTest2 implements RatesLT2 {
             lot.add(new Tick2( (startNumber + countToday) , getClockIn()) );
             availableTickets.add(countToday); //adds to list of cars in lot
             //ticketCount++;  //tickets issued today
+            ans = "";
         }
         
-        ans = "";
         while ( !ans.equalsIgnoreCase("3")){
             Double inOrOut = randNum.nextDouble();
                 //use random number to decide which screen to offer for action.
@@ -76,7 +76,7 @@ public class LotTest2 implements RatesLT2 {
                 else{
                     //Close Lot and Summarize; diagnostic print statement.
                     //unnecessary else statement falls through to exit.
-                    System.out.println("Close The Lot.");
+                    //System.out.println("Close The Lot.");
                 }
             }
             else{           //Exit lot. Wait for valid response.
@@ -114,13 +114,14 @@ public class LotTest2 implements RatesLT2 {
                 ans = "";
             }
         }
-        getTodayListOut();
+                //getTodayListOut(); - diagnostic
         getSummary(countToday);
             // add todays tickets to storeTickets ArrayList - All tickets Log
         for(int i=0; i<lot.size(); i++){
             storeTickets.add(lot.get(i));
         }
             ///write to ticket log file
+        System.out.println("\nEntries made to ticket Log file:");
         LotWriter.writeTickets(fileName, storeTickets);
     }
     
@@ -136,7 +137,6 @@ public class LotTest2 implements RatesLT2 {
                 totalLost += LOST_TICKET_FEE;
                 countLost++;
             }
-            System.out.println(lot.get(i).getFeeAmt());
         }
         grandTotal = totalRev;
         for(int i=0; i<storeTickets.size(); i++){

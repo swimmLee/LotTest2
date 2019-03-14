@@ -24,12 +24,14 @@ public class LotReader implements Serializable {
         
         try {
             obj = ois.readObject();
-            if(obj != null) {
-                System.out.println("obj not null at first read => true");
-            }
-            else{
-                System.out.println("obj is null at first read");
-            }
+            /*
+                if(obj != null) {
+                    System.out.println("obj not null at first read => true");
+                }
+                else{
+                    System.out.println("obj is null at first read");
+                }
+            */
             while(obj != null){
                 Tick2 ticket = (Tick2) obj;
                 oldTickets.add(ticket);
@@ -38,18 +40,18 @@ public class LotReader implements Serializable {
             
         }
         catch (EOFException e){
-            System.out.println("Expected exception caught in read try catch");
+            // -- diag --System.out.println("Expected exception caught in read try catch");
             //Do Nothing, this is expected when end of file.
         }
-        
-        if (oldTickets.isEmpty()){
-            System.out.println("No old Tickets Yet.");
-        }
-        
-        for(int i =0; i < oldTickets.size () ; i++){
-                System.out.println("Ticket no. " + oldTickets.get(i).getTicketNo()+
-                        "\tamount " + oldTickets.get(i).getFeeAmt());
+            /* -- diagnostic -- output Old Thickets file to screen
+            if (oldTickets.isEmpty()){
+                System.out.println("No old Tickets Yet.");
             }
+
+            for(int i =0; i < oldTickets.size () ; i++){
+                    System.out.println("Ticket no. " + oldTickets.get(i).getTicketNo()+
+                            "\tamount " + oldTickets.get(i).getFeeAmt());
+            }*/
         ois.close();
         return oldTickets;
     }
